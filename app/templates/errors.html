@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Errors & Logs — Insurance Mail Tracker{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-bug me-2"></i>Errors & Logs</h2>
+
+<ul class="nav nav-tabs mb-3" id="logTabs">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#errorsTab">Errors ({{ errors|length }})</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#logsTab">Run Log</a></li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="errorsTab">
+    {% if errors %}
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead><tr><th>Time</th><th>Stage</th><th>Type</th><th>Message</th><th>Msg ID</th></tr></thead>
+        <tbody>
+        {% for e in errors|reverse %}
+        <tr>
+          <td><small>{{ e.occurred_at[:19] }}</small></td>
+          <td><span class="badge bg-secondary">{{ e.stage }}</span></td>
+          <td>{{ e.error_type }}</td>
+          <td><small>{{ e.error_msg[:120] }}</small></td>
+          <td><small><code>{{ e.message_id[:12] }}</code></small></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-success">No errors recorded.</div>
+    {% endif %}
+  </div>
+  <div class="tab-pane fade" id="logsTab">
+    <pre class="log">{% for entry in logs %}{{ entry | tojson(indent=None) }}
+{% endfor %}{% if not logs %}(no log entries){% endif %}</pre>
+  </div>
+</div>
+{% endblock %}

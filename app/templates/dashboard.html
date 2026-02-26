@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Insurance Mail Tracker{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h2>
+
+{% if storage_mode == 'ephemeral' %}
+<div class="alert alert-warning d-flex align-items-center" role="alert">
+  <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+  <div><strong>Ephemeral Storage Mode</strong> — filesystem may be wiped on restart/redeploy (Render Free).
+  Reconnect Gmail and re-sync if data disappears. Data directory: <code>{{ data_dir }}</code></div>
+</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card text-center h-100 border-primary">
+      <div class="card-body">
+        <div class="fs-1 text-primary fw-bold">{{ record_count }}</div>
+        <div class="text-muted">Total Records</div>
+        <a href="/records" class="btn btn-sm btn-outline-primary mt-2">View All</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card text-center h-100 {% if review_count > 0 %}border-warning{% else %}border-success{% endif %}">
+      <div class="card-body">
+        <div class="fs-1 {% if review_count > 0 %}text-warning{% else %}text-success{% endif %} fw-bold">{{ review_count }}</div>
+        <div class="text-muted">Needs Review</div>
+        <a href="/review" class="btn btn-sm btn-outline-warning mt-2">Review</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card text-center h-100 {% if error_count > 0 %}border-danger{% else %}border-secondary{% endif %}">
+      <div class="card-body">
+        <div class="fs-1 {% if error_count > 0 %}text-danger{% else %}text-secondary{% endif %} fw-bold">{{ error_count }}</div>
+        <div class="text-muted">Errors</div>
+        <a href="/errors" class="btn btn-sm btn-outline-danger mt-2">View</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card text-center h-100 {% if connected %}border-success{% else %}border-secondary{% endif %}">
+      <div class="card-body">
+        <div class="fs-1 {% if connected %}text-success{% else %}text-secondary{% endif %}">
+          <i class="bi bi-{% if connected %}google{% else %}plug{% endif %}"></i>
+        </div>
+        <div class="text-muted">{% if connected %}Gmail Connected{% else %}Not Connected{% endif %}</div>
+        {% if connected %}
+          <a href="/sync/" class="btn btn-sm btn-success mt-2">Sync Now</a>
+        {% else %}
+          <a href="/auth/connect" class="btn btn-sm btn-outline-primary mt-2">Connect Gmail</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-clock-history me-2"></i>Last Sync</div>
+      <div class="card-body">
+        {% if last_run %}
+        <dl class="row mb-0">
+          <dt class="col-sm-5">Status</dt>
+          <dd class="col-sm-7">
+            <span class="badge bg-{% if last_run.status == 'completed' %}success{% elif last_run.status == 'running' %}primary{% else %}danger{% endif %}">
+              {{ last_run.status }}
+            </span>
+          </dd>
+          <dt class="col-sm-5">Started</dt>
+          <dd class="col-sm-7"><small>{{ last_run.started_at }}</small></dd>
+          <dt class="col-sm-5">Messages found</dt>
+          <dd class="col-sm-7">{{ last_run.messages_found }}</dd>
+          <dt class="col-sm-5">New</dt>
+          <dd class="col-sm-7">{{ last_run.messages_new }}</dd>
+          <dt class="col-sm-5">Records created</dt>
+          <dd class="col-sm-7">{{ last_run.records_created }}</dd>
+          <dt class="col-sm-5">Errors</dt>
+          <dd class="col-sm-7">{{ last_run.errors }}</dd>
+        </dl>
+        {% else %}
+        <p class="text-muted mb-0">No syncs run yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</div>
+      <div class="card-body d-flex flex-column gap-2">
+        <a href="/sync/" class="btn btn-primary"><i class="bi bi-arrow-repeat me-2"></i>Run Sync</a>
+        <a href="/export/download" class="btn btn-success"><i class="bi bi-file-earmark-excel me-2"></i>Download Excel</a>
+        <a href="/records" class="btn btn-outline-secondary"><i class="bi bi-table me-2"></i>Browse Records</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

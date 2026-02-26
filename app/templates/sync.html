@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Sync — Insurance Mail Tracker{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-arrow-repeat me-2"></i>Sync Gmail</h2>
+
+<div class="card mb-4">
+  <div class="card-header">Start New Sync</div>
+  <div class="card-body">
+    <form id="syncForm">
+      <div class="mb-3">
+        <label class="form-label">Custom Search Query (optional)</label>
+        <input type="text" class="form-control font-monospace" name="query"
+               placeholder="Leave blank to use default query"/>
+        <div class="form-text">Default searches for Hebrew + English insurance keywords.</div>
+      </div>
+      <button type="submit" class="btn btn-primary" id="syncBtn">
+        <i class="bi bi-arrow-repeat me-2"></i>Start Sync
+      </button>
+      <span id="syncStatus" class="ms-3 text-muted"></span>
+    </form>
+  </div>
+</div>
+
+{% if last_run %}
+<div class="card mb-4">
+  <div class="card-header">Latest Run</div>
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Run ID</dt><dd class="col-sm-8"><code>{{ last_run.run_id }}</code></dd>
+      <dt class="col-sm-4">Status</dt>
+      <dd class="col-sm-8">
+        <span class="badge bg-{% if last_run.status == 'completed' %}success{% elif last_run.status == 'running' %}primary{% else %}danger{% endif %}">
+          {{ last_run.status }}
+        </span>
+      </dd>
+      <dt class="col-sm-4">Started</dt><dd class="col-sm-8">{{ last_run.started_at }}</dd>
+      <dt class="col-sm-4">Finished</dt><dd class="col-sm-8">{{ last_run.finished_at or '—' }}</dd>
+      <dt class="col-sm-4">Messages found</dt><dd class="col-sm-8">{{ last_run.messages_found }}</dd>
+      <dt class="col-sm-4">New / Skipped</dt><dd class="col-sm-8">{{ last_run.messages_new }} / {{ last_run.messages_skipped }}</dd>
+      <dt class="col-sm-4">Attachments</dt><dd class="col-sm-8">{{ last_run.attachments_processed }}</dd>
+      <dt class="col-sm-4">Records created</dt><dd class="col-sm-8">{{ last_run.records_created }}</dd>
+      <dt class="col-sm-4">Needs review</dt><dd class="col-sm-8">{{ last_run.records_needs_review }}</dd>
+      <dt class="col-sm-4">Errors</dt><dd class="col-sm-8">{{ last_run.errors }}</dd>
+    </dl>
+  </div>
+</div>
+{% endif %}
+
+{% if runs %}
+<div class="card">
+  <div class="card-header">Recent Runs</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead><tr>
+        <th>Started</th><th>Status</th><th>Found</th><th>New</th><th>Records</th><th>Errors</th>
+      </tr></thead>
+      <tbody>
+      {% for r in runs|reverse %}
+      <tr>
+        <td><small>{{ r.started_at[:19] }}</small></td>
+        <td><span class="badge bg-{% if r.status == 'completed' %}success{% elif r.status == 'running' %}primary{% else %}danger{% endif %}">{{ r.status }}</span></td>
+        <td>{{ r.messages_found }}</td>
+        <td>{{ r.messages_new }}</td>
+        <td>{{ r.records_created }}</td>
+        <td>{{ r.errors }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('syncForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('syncBtn');
+  const status = document.getElementById('syncStatus');
+  btn.disabled = true;
+  status.textContent = 'Starting sync…';
+  const form = new FormData(this);
+  try {
+    const resp = await fetch('/sync/start', {method: 'POST', body: form});
+    const data = await resp.json();
+    if (resp.ok) {
+      status.textContent = 'Sync running in background. Refresh in a minute.';
+      status.className = 'ms-3 text-success';
+      pollStatus();
+    } else {
+      status.textContent = data.message || 'Error starting sync.';
+      status.className = 'ms-3 text-danger';
+      btn.disabled = false;
+    }
+  } catch(err) {
+    status.textContent = 'Network error.';
+    status.className = 'ms-3 text-danger';
+    btn.disabled = false;
+  }
+});
+
+function pollStatus() {
+  const status = document.getElementById('syncStatus');
+  const interval = setInterval(async () => {
+    try {
+      const resp = await fetch('/sync/status');
+      const data = await resp.json();
+      if (!data.running) {
+        clearInterval(interval);
+        status.textContent = 'Sync complete. Records: ' + data.record_count;
+        document.getElementById('syncBtn').disabled = false;
+        setTimeout(() => location.reload(), 1500);
+      }
+    } catch(e) { clearInterval(interval); }
+  }, 3000);
+}
+</script>
+{% endblock %}

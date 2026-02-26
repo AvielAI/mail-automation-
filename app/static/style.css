@@ -1,0 +1,21 @@
+/* Insurance Mail Tracker — supplemental styles */
+body {
+  font-size: 14px;
+}
+
+.table th {
+  white-space: nowrap;
+}
+
+.sidebar {
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none !important;
+  }
+}
