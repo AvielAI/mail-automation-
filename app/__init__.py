@@ -51,3 +51,13 @@ def create_app(config_class: type = Config) -> Flask:
         config_class.STORAGE_MODE,
     )
     return app
+
+
+# ---------------------------------------------------------------------------
+# Module-level app instance — required for Render's auto-detected
+# "gunicorn app:app" start command which cannot be overridden on Free tier.
+# Guarded so test-time imports (which lack google-auth's cffi deps) don't fail.
+# ---------------------------------------------------------------------------
+import sys as _sys
+if "pytest" not in _sys.modules:
+    app = create_app()
