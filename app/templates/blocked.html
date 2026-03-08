@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Blocked Jobs{% endblock %}
+{% block content %}
+<h1>Blocked & Review Jobs</h1>
+<p>Jobs that need manual intervention or review.</p>
+
+<div class="table-container">
+    <table class="jobs-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr class="status-{{ job.submission_status }}">
+                <td>{{ job.id }}</td>
+                <td>{{ job.capture_date[:10] if job.capture_date else '' }}</td>
+                <td><a href="/job/{{ job.id }}">{{ job.job_title or 'Unknown' }}</a></td>
+                <td>{{ job.company or '-' }}</td>
+                <td><span class="badge badge-{{ job.submission_status }}">{{ job.submission_status }}</span></td>
+                <td>{{ job.notes[:60] if job.notes else '-' }}...</td>
+                <td>
+                    {% if job.submission_status in ('blocked', 'email_failed') %}
+                    <button onclick="retryJob({{ job.id }})" class="btn btn-sm btn-warning">Retry</button>
+                    {% endif %}
+                    {% if job.submission_status == 'review_needed' %}
+                    <button onclick="approveJob({{ job.id }})" class="btn btn-sm btn-success">Approve</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not jobs %}
+            <tr><td colspan="7" class="empty-state">No blocked or review jobs.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

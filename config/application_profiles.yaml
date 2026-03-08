@@ -1,0 +1,62 @@
+profiles:
+  default:
+    name: "General Application"
+    description: "Default profile for general tech positions"
+    resume_template: "general"
+    emphasis:
+      - skills
+      - projects
+    tone: "professional"
+
+  software_development:
+    name: "Software Developer"
+    description: "Profile tailored for software development roles"
+    resume_template: "developer"
+    emphasis:
+      - programming_languages
+      - frameworks
+      - projects
+      - experience
+    tone: "technical"
+
+  data:
+    name: "Data Analyst / Engineer"
+    description: "Profile tailored for data roles"
+    resume_template: "data"
+    emphasis:
+      - databases
+      - tools
+      - projects
+      - skills
+    tone: "analytical"
+
+  automation_qa:
+    name: "QA / Automation Engineer"
+    description: "Profile tailored for QA and automation roles"
+    resume_template: "qa"
+    emphasis:
+      - tools
+      - frameworks
+      - experience
+      - projects
+    tone: "detail-oriented"
+
+  industrial_engineering:
+    name: "Industrial Engineer / PMO"
+    description: "Profile tailored for IE and project management roles"
+    resume_template: "industrial"
+    emphasis:
+      - experience
+      - skills
+      - certifications
+    tone: "managerial"
+
+  devops_cloud:
+    name: "DevOps / Cloud Engineer"
+    description: "Profile tailored for DevOps and cloud roles"
+    resume_template: "devops"
+    emphasis:
+      - cloud
+      - tools
+      - experience
+    tone: "technical"

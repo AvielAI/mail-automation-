@@ -1,0 +1,358 @@
+/* Job Automation Dashboard Styles */
+:root {
+    --primary: #1a3c6e;
+    --success: #28a745;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --info: #17a2b8;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --border: #dee2e6;
+    --bg: #f5f6fa;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Navbar */
+.navbar {
+    background: var(--primary);
+    color: white;
+    padding: 0.8rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-brand {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.nav-links { display: flex; gap: 1rem; align-items: center; }
+
+.nav-link {
+    color: rgba(255,255,255,0.85);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+.nav-link:hover { background: rgba(255,255,255,0.15); color: white; }
+
+.btn-export {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* Container */
+.container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+/* Dashboard Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.mode-badge {
+    background: var(--primary);
+    color: white;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* WhatsApp Panel */
+.whatsapp-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-left: 4px solid #25D366;
+}
+
+.wa-status { display: flex; align-items: center; gap: 0.8rem; }
+
+.wa-icon {
+    background: #25D366;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.wa-controls { display: flex; gap: 0.5rem; }
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-top: 3px solid var(--primary);
+}
+
+.stat-card.stat-success { border-top-color: var(--success); }
+.stat-card.stat-info { border-top-color: var(--info); }
+.stat-card.stat-warning { border-top-color: var(--warning); }
+.stat-card.stat-danger { border-top-color: var(--danger); }
+
+.stat-number { font-size: 2rem; font-weight: 700; color: var(--primary); }
+.stat-label { font-size: 0.85rem; color: #666; margin-top: 0.3rem; }
+
+/* Test Panel */
+.test-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.test-panel h3 { margin-bottom: 0.8rem; }
+
+.test-panel textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: vertical;
+    margin-bottom: 0.8rem;
+}
+
+#test-result {
+    margin-top: 0.8rem;
+    padding: 0.8rem;
+    border-radius: 4px;
+    display: none;
+    font-family: monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.btn:hover { opacity: 0.85; }
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-warning { background: var(--warning); color: #333; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-sm { padding: 0.25rem 0.6rem; font-size: 0.8rem; }
+
+/* Tables */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    overflow-x: auto;
+}
+
+.table-container h2 { margin-bottom: 1rem; }
+
+.jobs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.jobs-table th {
+    background: var(--light);
+    padding: 0.7rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.jobs-table td {
+    padding: 0.6rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.jobs-table tr:hover { background: #f0f4ff; }
+
+.jobs-table a { color: var(--primary); text-decoration: none; font-weight: 500; }
+.jobs-table a:hover { text-decoration: underline; }
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-pending { background: #e9ecef; color: #666; }
+.badge-processing { background: #cce5ff; color: #004085; }
+.badge-submitted, .badge-sent, .badge-completed { background: #d4edda; color: #155724; }
+.badge-blocked, .badge-email_failed { background: #f8d7da; color: #721c24; }
+.badge-review_needed { background: #fff3cd; color: #856404; }
+.badge-form_filled { background: #d1ecf1; color: #0c5460; }
+.badge-filled { background: #d4edda; color: #155724; }
+.badge-risky { background: #f8d7da; color: #721c24; }
+.badge-no_apply_method { background: #e9ecef; color: #666; }
+.badge-low_fit { background: #e9ecef; color: #666; }
+.badge-running { background: #cce5ff; color: #004085; }
+
+/* Detail Page */
+.detail-header {
+    margin-bottom: 1.5rem;
+}
+
+.detail-header h1 {
+    margin: 0.5rem 0;
+}
+
+.back-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.detail-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-card h3 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+    color: var(--primary);
+}
+
+.detail-row {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row:last-child { border-bottom: none; }
+
+.raw-message {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.9rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.risky-row { background: #fff3cd; }
+
+.error-entry {
+    padding: 0.6rem;
+    margin-bottom: 0.5rem;
+    background: #f8d7da;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.error-date {
+    display: block;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.3rem;
+}
+
+.action-bar {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* Scheduling Panel */
+.scheduling-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--info);
+}
+
+.scheduling-panel h3 {
+    margin-bottom: 0.8rem;
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.scheduling-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.6rem;
+}
+
+.sched-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.sched-label { color: #666; }
+.sched-value { font-weight: 600; }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }

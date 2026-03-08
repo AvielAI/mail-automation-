@@ -1,100 +1,136 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — Insurance Mail Tracker{% endblock %}
+{% block title %}Dashboard - Job Automation{% endblock %}
 {% block content %}
-<h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h2>
-
-{% if storage_mode == 'ephemeral' %}
-<div class="alert alert-warning d-flex align-items-center" role="alert">
-  <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-  <div><strong>Ephemeral Storage Mode</strong> — filesystem may be wiped on restart/redeploy (Render Free).
-  Reconnect Gmail and re-sync if data disappears. Data directory: <code>{{ data_dir }}</code></div>
-</div>
-{% endif %}
-
-<div class="row g-3 mb-4">
-  <div class="col-sm-6 col-lg-3">
-    <div class="card text-center h-100 border-primary">
-      <div class="card-body">
-        <div class="fs-1 text-primary fw-bold">{{ record_count }}</div>
-        <div class="text-muted">Total Records</div>
-        <a href="/records" class="btn btn-sm btn-outline-primary mt-2">View All</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card text-center h-100 {% if review_count > 0 %}border-warning{% else %}border-success{% endif %}">
-      <div class="card-body">
-        <div class="fs-1 {% if review_count > 0 %}text-warning{% else %}text-success{% endif %} fw-bold">{{ review_count }}</div>
-        <div class="text-muted">Needs Review</div>
-        <a href="/review" class="btn btn-sm btn-outline-warning mt-2">Review</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card text-center h-100 {% if error_count > 0 %}border-danger{% else %}border-secondary{% endif %}">
-      <div class="card-body">
-        <div class="fs-1 {% if error_count > 0 %}text-danger{% else %}text-secondary{% endif %} fw-bold">{{ error_count }}</div>
-        <div class="text-muted">Errors</div>
-        <a href="/errors" class="btn btn-sm btn-outline-danger mt-2">View</a>
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card text-center h-100 {% if connected %}border-success{% else %}border-secondary{% endif %}">
-      <div class="card-body">
-        <div class="fs-1 {% if connected %}text-success{% else %}text-secondary{% endif %}">
-          <i class="bi bi-{% if connected %}google{% else %}plug{% endif %}"></i>
-        </div>
-        <div class="text-muted">{% if connected %}Gmail Connected{% else %}Not Connected{% endif %}</div>
-        {% if connected %}
-          <a href="/sync/" class="btn btn-sm btn-success mt-2">Sync Now</a>
-        {% else %}
-          <a href="/auth/connect" class="btn btn-sm btn-outline-primary mt-2">Connect Gmail</a>
-        {% endif %}
-      </div>
-    </div>
-  </div>
+<div class="dashboard-header">
+    <h1>Job Application Dashboard</h1>
+    <div class="mode-badge">Mode: {{ mode }}</div>
 </div>
 
-<div class="row g-3">
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header"><i class="bi bi-clock-history me-2"></i>Last Sync</div>
-      <div class="card-body">
-        {% if last_run %}
-        <dl class="row mb-0">
-          <dt class="col-sm-5">Status</dt>
-          <dd class="col-sm-7">
-            <span class="badge bg-{% if last_run.status == 'completed' %}success{% elif last_run.status == 'running' %}primary{% else %}danger{% endif %}">
-              {{ last_run.status }}
+<!-- WhatsApp Status -->
+<div class="whatsapp-panel">
+    <div class="wa-status">
+        <span class="wa-icon">WA</span>
+        <span>WhatsApp: <strong id="wa-status">{{ whatsapp_status }}</strong></span>
+    </div>
+    <div class="wa-controls">
+        <button onclick="startWhatsApp()" class="btn btn-success">Start Monitor</button>
+        <button onclick="stopWhatsApp()" class="btn btn-danger">Stop Monitor</button>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.total }}</div>
+        <div class="stat-label">Total Jobs</div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-number">{{ stats.submitted }}</div>
+        <div class="stat-label">Submitted</div>
+    </div>
+    <div class="stat-card stat-info">
+        <div class="stat-number">{{ stats.sent }}</div>
+        <div class="stat-label">Sent</div>
+    </div>
+    <div class="stat-card stat-warning">
+        <div class="stat-number">{{ stats.review }}</div>
+        <div class="stat-label">Review</div>
+    </div>
+    <div class="stat-card stat-danger">
+        <div class="stat-number">{{ stats.blocked }}</div>
+        <div class="stat-label">Blocked</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.pending }}</div>
+        <div class="stat-label">Pending</div>
+    </div>
+</div>
+
+<!-- Scheduling Info -->
+<div class="scheduling-panel">
+    <h3>Monitoring Status</h3>
+    <div class="scheduling-grid">
+        <div class="sched-item">
+            <span class="sched-label">First Run:</span>
+            <span class="sched-value {% if scheduling.first_run_completed %}text-success{% else %}text-warning{% endif %}">
+                {{ 'Completed' if scheduling.first_run_completed else 'Not yet' }}
             </span>
-          </dd>
-          <dt class="col-sm-5">Started</dt>
-          <dd class="col-sm-7"><small>{{ last_run.started_at }}</small></dd>
-          <dt class="col-sm-5">Messages found</dt>
-          <dd class="col-sm-7">{{ last_run.messages_found }}</dd>
-          <dt class="col-sm-5">New</dt>
-          <dd class="col-sm-7">{{ last_run.messages_new }}</dd>
-          <dt class="col-sm-5">Records created</dt>
-          <dd class="col-sm-7">{{ last_run.records_created }}</dd>
-          <dt class="col-sm-5">Errors</dt>
-          <dd class="col-sm-7">{{ last_run.errors }}</dd>
-        </dl>
-        {% else %}
-        <p class="text-muted mb-0">No syncs run yet.</p>
-        {% endif %}
-      </div>
+        </div>
+        <div class="sched-item">
+            <span class="sched-label">Last Poll:</span>
+            <span class="sched-value">{{ scheduling.last_poll_time[:19] if scheduling.last_poll_time != 'N/A' else 'N/A' }}</span>
+        </div>
+        <div class="sched-item">
+            <span class="sched-label">Next Poll:</span>
+            <span class="sched-value">{{ scheduling.next_poll_time[:19] if scheduling.next_poll_time != 'N/A' else 'N/A' }}</span>
+        </div>
+        <div class="sched-item">
+            <span class="sched-label">New in Last Cycle:</span>
+            <span class="sched-value">{{ scheduling.last_cycle_new_count }}</span>
+        </div>
+        <div class="sched-item">
+            <span class="sched-label">Total Messages:</span>
+            <span class="sched-value">{{ scheduling.total_messages }}</span>
+        </div>
+        <div class="sched-item">
+            <span class="sched-label">Historical:</span>
+            <span class="sched-value">{{ scheduling.historical_messages }}</span>
+        </div>
     </div>
-  </div>
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</div>
-      <div class="card-body d-flex flex-column gap-2">
-        <a href="/sync/" class="btn btn-primary"><i class="bi bi-arrow-repeat me-2"></i>Run Sync</a>
-        <a href="/export/download" class="btn btn-success"><i class="bi bi-file-earmark-excel me-2"></i>Download Excel</a>
-        <a href="/records" class="btn btn-outline-secondary"><i class="bi bi-table me-2"></i>Browse Records</a>
-      </div>
-    </div>
-  </div>
+</div>
+
+<!-- Manual Test -->
+<div class="test-panel">
+    <h3>Test Message Processing</h3>
+    <textarea id="test-text" rows="4" placeholder="Paste a job post message here to test..."></textarea>
+    <button onclick="processText()" class="btn btn-primary">Process Message</button>
+    <div id="test-result"></div>
+</div>
+
+<!-- Jobs Table -->
+<div class="table-container">
+    <h2>Recent Jobs</h2>
+    <table class="jobs-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Group</th>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Category</th>
+                <th>Fit</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr class="status-{{ job.submission_status }}">
+                <td>{{ job.id }}</td>
+                <td>{{ job.capture_date[:10] if job.capture_date else '' }}</td>
+                <td title="{{ job.whatsapp_group }}">{{ job.whatsapp_group[:20] if job.whatsapp_group else '' }}...</td>
+                <td><a href="/job/{{ job.id }}">{{ job.job_title or 'Unknown' }}</a></td>
+                <td>{{ job.company or '-' }}</td>
+                <td>{{ job.role_category or '-' }}</td>
+                <td>{{ '%.0f'|format(job.fit_score) if job.fit_score else '-' }}</td>
+                <td>{{ job.apply_method or '-' }}</td>
+                <td><span class="badge badge-{{ job.submission_status }}">{{ job.submission_status }}</span></td>
+                <td>
+                    {% if job.submission_status in ('blocked', 'email_failed') %}
+                    <button onclick="retryJob({{ job.id }})" class="btn btn-sm btn-warning">Retry</button>
+                    {% endif %}
+                    {% if job.submission_status == 'review_needed' %}
+                    <button onclick="approveJob({{ job.id }})" class="btn btn-sm btn-success">Approve</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not jobs %}
+            <tr><td colspan="10" class="empty-state">No jobs yet. Start the WhatsApp monitor or test with a message above.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

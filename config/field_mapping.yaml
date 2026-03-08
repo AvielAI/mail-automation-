@@ -1,0 +1,55 @@
+field_mapping:
+  # Maps common form field identifiers to candidate profile fields
+  personal:
+    - selectors: ["first_name", "firstName", "fname", "שם פרטי"]
+      value_path: "candidate.first_name"
+    - selectors: ["last_name", "lastName", "lname", "שם משפחה"]
+      value_path: "candidate.last_name"
+    - selectors: ["full_name", "fullName", "name", "שם מלא"]
+      value_path: "candidate.full_name"
+    - selectors: ["email", "mail", "אימייל", "דוא\"ל"]
+      value_path: "candidate.email"
+    - selectors: ["phone", "mobile", "tel", "telephone", "טלפון", "נייד"]
+      value_path: "candidate.phone"
+    - selectors: ["city", "location", "address", "עיר", "מיקום", "כתובת"]
+      value_path: "candidate.location"
+    - selectors: ["linkedin", "linkedin_url"]
+      value_path: "candidate.linkedin"
+    - selectors: ["github", "github_url"]
+      value_path: "candidate.github"
+    - selectors: ["portfolio", "website", "portfolio_url"]
+      value_path: "candidate.portfolio"
+
+  file_upload:
+    - selectors: ["resume", "cv", "קורות חיים", "קו\"ח"]
+      file_type: "resume"
+      prefer: "pdf"
+      fallback: "docx"
+    - selectors: ["cover_letter", "מכתב מלווה"]
+      file_type: "cover_letter"
+      prefer: "pdf"
+      fallback: "docx"
+
+  high_risk_fields:
+    - patterns: ["salary", "שכר", "expectation", "ציפיות"]
+      action: "pause"
+      reason: "Salary field detected - requires manual input"
+    - patterns: ["id_number", "תעודת זהות", "ת.ז"]
+      action: "pause"
+      reason: "ID number field detected - sensitive data"
+    - patterns: ["password", "סיסמה"]
+      action: "pause"
+      reason: "Password field detected"
+    - patterns: ["captcha", "recaptcha", "I'm not a robot"]
+      action: "pause"
+      reason: "CAPTCHA detected"
+
+  dropdown_mapping:
+    experience_years:
+      - patterns: ["0-1", "ללא ניסיון", "entry", "junior", "0", "1"]
+        select: "0-1"
+      - patterns: ["1-2", "1-3"]
+        select: "1-2"
+    education_level:
+      - patterns: ["bachelor", "תואר ראשון", "B.Sc", "B.A"]
+        select_contains: "bachelor"

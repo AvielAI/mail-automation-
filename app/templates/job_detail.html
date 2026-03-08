@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Job #{{ job.id }} - {{ job.job_title }}{% endblock %}
+{% block content %}
+<div class="detail-header">
+    <a href="/" class="back-link">&larr; Back to Dashboard</a>
+    <h1>{{ job.job_title or 'Unknown Position' }}</h1>
+    <span class="badge badge-{{ job.submission_status }}">{{ job.submission_status }}</span>
+</div>
+
+<div class="detail-grid">
+    <!-- Job Info -->
+    <div class="detail-card">
+        <h3>Job Information</h3>
+        <div class="detail-row"><strong>Company:</strong> {{ job.company or '-' }}</div>
+        <div class="detail-row"><strong>Location:</strong> {{ job.location or '-' }}</div>
+        <div class="detail-row"><strong>Category:</strong> {{ job.role_category or '-' }}</div>
+        <div class="detail-row"><strong>Job Type:</strong> {{ job.job_type or '-' }}</div>
+        <div class="detail-row"><strong>Experience:</strong> {{ job.experience_required or '-' }}</div>
+        <div class="detail-row"><strong>WhatsApp Group:</strong> {{ job.whatsapp_group or '-' }}</div>
+        <div class="detail-row"><strong>Capture Date:</strong> {{ job.capture_date or '-' }}</div>
+    </div>
+
+    <!-- Application Info -->
+    <div class="detail-card">
+        <h3>Application Details</h3>
+        <div class="detail-row"><strong>Profile:</strong> {{ job.selected_application_profile or '-' }}</div>
+        <div class="detail-row"><strong>Fit Score:</strong> {{ '%.1f'|format(job.fit_score) if job.fit_score else '-' }}</div>
+        <div class="detail-row"><strong>Detection Confidence:</strong> {{ '%.0f'|format(job.detection_confidence) if job.detection_confidence else '-' }}%</div>
+        <div class="detail-row"><strong>Apply Method:</strong> {{ job.apply_method or '-' }}</div>
+        <div class="detail-row"><strong>Apply Email:</strong> {{ job.apply_email or '-' }}</div>
+        <div class="detail-row"><strong>Apply Link:</strong>
+            {% if job.apply_link %}<a href="{{ job.apply_link }}" target="_blank">{{ job.apply_link[:60] }}...</a>{% else %}-{% endif %}
+        </div>
+        <div class="detail-row"><strong>Sent:</strong> {{ 'Yes' if job.sent_or_not else 'No' }}</div>
+        <div class="detail-row"><strong>Sent Date:</strong> {{ job.sent_date or '-' }}</div>
+    </div>
+
+    <!-- Generated Files -->
+    <div class="detail-card">
+        <h3>Generated Files</h3>
+        {% for f in files %}
+        <div class="detail-row">
+            <strong>{{ f.file_type }} ({{ f.file_format }}):</strong>
+            <span title="{{ f.file_path }}">{{ f.file_path.split('/')[-1] if '/' in f.file_path else f.file_path.split('\\')[-1] }}</span>
+        </div>
+        {% endfor %}
+        {% if not files %}
+        <div class="empty-state">No files generated yet</div>
+        {% endif %}
+        <div class="detail-row"><strong>Resume DOCX:</strong> {{ job.generated_resume_docx or '-' }}</div>
+        <div class="detail-row"><strong>Resume PDF:</strong> {{ job.generated_resume_pdf or '-' }}</div>
+    </div>
+
+    <!-- Notes -->
+    <div class="detail-card">
+        <h3>Notes</h3>
+        <div class="detail-row">{{ job.notes or 'No notes' }}</div>
+        <div class="detail-row"><strong>Detection Reason:</strong> {{ job.detection_reason or '-' }}</div>
+    </div>
+</div>
+
+<!-- Raw Message -->
+<div class="detail-card full-width">
+    <h3>Raw Message</h3>
+    <pre class="raw-message">{{ job.raw_message or 'N/A' }}</pre>
+</div>
+
+<!-- Form Answers -->
+{% if form_answers %}
+<div class="detail-card full-width">
+    <h3>Form Fill Details</h3>
+    <table class="jobs-table">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Confidence</th>
+                <th>Risky</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fa in form_answers %}
+            <tr class="{{ 'risky-row' if fa.is_risky else '' }}">
+                <td>{{ fa.field_name }}</td>
+                <td>{{ fa.field_type or '-' }}</td>
+                <td>{{ fa.filled_value[:50] if fa.filled_value else '-' }}</td>
+                <td>{{ '%.0f%%'|format(fa.confidence * 100) if fa.confidence else '-' }}</td>
+                <td>{{ 'Yes' if fa.is_risky else 'No' }}</td>
+                <td><span class="badge badge-{{ fa.status }}">{{ fa.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Pipeline Runs -->
+{% if runs %}
+<div class="detail-card full-width">
+    <h3>Pipeline Runs</h3>
+    <table class="jobs-table">
+        <thead>
+            <tr><th>Stage</th><th>Status</th><th>Started</th><th>Finished</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+            {% for r in runs %}
+            <tr>
+                <td>{{ r.stage }}</td>
+                <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+                <td>{{ r.started_at }}</td>
+                <td>{{ r.finished_at or '-' }}</td>
+                <td>{{ r.details[:80] if r.details else '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Errors -->
+{% if errors %}
+<div class="detail-card full-width">
+    <h3>Errors</h3>
+    {% for e in errors %}
+    <div class="error-entry">
+        <strong>{{ e.stage }} - {{ e.error_type }}:</strong> {{ e.error_message }}
+        <span class="error-date">{{ e.created_at }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Actions -->
+<div class="action-bar">
+    {% if job.submission_status in ('blocked', 'email_failed') %}
+    <button onclick="retryJob({{ job.id }})" class="btn btn-warning">Retry Job</button>
+    {% endif %}
+    {% if job.submission_status == 'review_needed' %}
+    <button onclick="approveJob({{ job.id }})" class="btn btn-success">Approve & Process</button>
+    {% endif %}
+</div>
+{% endblock %}

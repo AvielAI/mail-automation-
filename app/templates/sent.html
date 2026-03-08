@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Sent Jobs{% endblock %}
+{% block content %}
+<h1>Sent & Submitted Jobs</h1>
+<p>Successfully applied positions.</p>
+
+<div class="table-container">
+    <table class="jobs-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Capture Date</th>
+                <th>Sent Date</th>
+                <th>Group</th>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Method</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.id }}</td>
+                <td>{{ job.capture_date[:10] if job.capture_date else '' }}</td>
+                <td>{{ job.sent_date[:10] if job.sent_date else '-' }}</td>
+                <td>{{ job.whatsapp_group[:25] if job.whatsapp_group else '' }}...</td>
+                <td><a href="/job/{{ job.id }}">{{ job.job_title or 'Unknown' }}</a></td>
+                <td>{{ job.company or '-' }}</td>
+                <td>{{ job.apply_method or '-' }}</td>
+                <td><span class="badge badge-{{ job.submission_status }}">{{ job.submission_status }}</span></td>
+            </tr>
+            {% endfor %}
+            {% if not jobs %}
+            <tr><td colspan="8" class="empty-state">No sent applications yet.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

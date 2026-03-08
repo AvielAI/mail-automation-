@@ -1,0 +1,94 @@
+matching:
+  role_categories:
+    - name: "software_development"
+      keywords:
+        - "developer"
+        - "מפתח"
+        - "פיתוח"
+        - "software"
+        - "backend"
+        - "frontend"
+        - "fullstack"
+        - "full stack"
+        - "full-stack"
+        - "web developer"
+        - "python"
+        - "javascript"
+        - "react"
+        - "node"
+      min_fit_score: 60
+
+    - name: "data"
+      keywords:
+        - "data analyst"
+        - "data engineer"
+        - "data scientist"
+        - "אנליסט"
+        - "דאטה"
+        - "bi"
+        - "analytics"
+        - "sql"
+        - "power bi"
+        - "tableau"
+        - "etl"
+      min_fit_score: 50
+
+    - name: "automation_qa"
+      keywords:
+        - "qa"
+        - "automation"
+        - "אוטומציה"
+        - "בדיקות"
+        - "testing"
+        - "quality"
+        - "selenium"
+        - "playwright"
+        - "cypress"
+      min_fit_score: 55
+
+    - name: "devops_cloud"
+      keywords:
+        - "devops"
+        - "cloud"
+        - "aws"
+        - "azure"
+        - "docker"
+        - "kubernetes"
+        - "ci/cd"
+        - "infrastructure"
+      min_fit_score: 45
+
+    - name: "industrial_engineering"
+      keywords:
+        - "הנדסת תעשייה"
+        - "industrial engineer"
+        - "תעו\"נ"
+        - "pmo"
+        - "project manager"
+        - "ניהול פרויקטים"
+        - "process"
+        - "lean"
+        - "six sigma"
+      min_fit_score: 50
+
+    - name: "system_admin"
+      keywords:
+        - "system administrator"
+        - "sysadmin"
+        - "it support"
+        - "helpdesk"
+        - "מנהל מערכות"
+        - "תמיכה טכנית"
+        - "network"
+      min_fit_score: 40
+
+  scoring:
+    keyword_match_weight: 0.4
+    skill_overlap_weight: 0.3
+    experience_match_weight: 0.2
+    education_match_weight: 0.1
+
+  thresholds:
+    auto_apply: 70
+    review_needed: 40
+    skip: 0

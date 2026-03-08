@@ -1,0 +1,32 @@
+candidate:
+  first_name: "Aviel"
+  last_name: "Butah"
+  full_name: "Aviel Butah"
+  email: "aviel17520@gmail.com"
+  phone: "+972-58-7153937"
+  location: "Jerusalem, Israel"
+  linkedin: ""
+  github: ""
+  portfolio: ""
+  languages:
+    - language: "Hebrew"
+      level: "Native"
+    - language: "English"
+      level: "Fluent"
+  summary: >
+    Junior software developer with a strong foundation in computer science,
+    hands-on experience in Python, JavaScript, and modern web technologies.
+    Eager to learn and contribute to development teams.
+  education:
+    - institution: ""
+      degree: ""
+      field: ""
+      start_date: ""
+      end_date: ""
+      gpa: ""
+  military_service:
+    role: ""
+    unit: ""
+    start_date: ""
+    end_date: ""
+    description: ""

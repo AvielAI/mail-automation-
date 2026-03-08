@@ -1,0 +1,30 @@
+generated_files:
+  output_base_dir: "generated"
+
+  naming_convention:
+    resume: "{candidate_name}_{job_title}_{company}_{date}"
+    cover_letter: "Cover_Letter_{candidate_name}_{company}_{date}"
+
+  formats:
+    resume:
+      - type: "docx"
+        template: "resume_template.docx"
+      - type: "pdf"
+        conversion_method: "libreoffice_headless"
+        command: "libreoffice --headless --convert-to pdf --outdir {output_dir} {input_file}"
+
+    cover_letter:
+      - type: "docx"
+        template: "cover_letter_template.docx"
+      - type: "pdf"
+        conversion_method: "libreoffice_headless"
+
+  folder_structure:
+    per_job: true
+    pattern: "{date}_{company}_{job_title}"
+    contents:
+      - "resume.docx"
+      - "resume.pdf"
+      - "cover_letter.docx"
+      - "cover_letter.pdf"
+      - "job_details.json"

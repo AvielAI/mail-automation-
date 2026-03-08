@@ -1,0 +1,94 @@
+workflow:
+  mode: "full_automatic"
+
+  stages:
+    - name: "message_intake"
+      auto: true
+      description: "Read new WhatsApp messages"
+
+    - name: "job_detection"
+      auto: true
+      description: "Classify if message is an actionable job post"
+
+    - name: "job_extraction"
+      auto: true
+      description: "Extract structured job details"
+
+    - name: "role_classification"
+      auto: true
+      description: "Classify role category"
+
+    - name: "profile_selection"
+      auto: true
+      description: "Select best application profile"
+
+    - name: "resume_generation"
+      auto: true
+      description: "Generate tailored resume from source-of-truth"
+
+    - name: "file_generation"
+      auto: true
+      description: "Generate DOCX and PDF files"
+
+    - name: "cover_letter"
+      auto: true
+      condition: "only_if_required"
+      description: "Generate cover letter only if job explicitly asks for it"
+
+    - name: "application_routing"
+      auto: true
+      description: "Route to form fill or email based on apply method"
+
+    - name: "form_fill"
+      auto: true
+      pause_on:
+        - "captcha"
+        - "2fa"
+        - "login_required"
+        - "broken_page"
+        - "missing_mandatory_data"
+        - "unknown_high_risk_field"
+      description: "Fill application form automatically"
+
+    - name: "email_send"
+      auto: true
+      description: "Send application email when only email is available"
+
+    - name: "submission"
+      auto: true
+      pause_on:
+        - "captcha"
+        - "2fa"
+        - "login_required"
+        - "broken_page"
+        - "unconfident_fill"
+      description: "Submit application automatically"
+
+    - name: "logging"
+      auto: true
+      description: "Log everything to SQLite and update dashboard"
+
+  blocking_conditions:
+    - "captcha"
+    - "2fa_required"
+    - "login_wall"
+    - "page_load_failure"
+    - "missing_mandatory_field_data"
+    - "unknown_sensitive_field"
+    - "file_upload_failure"
+    - "email_send_failure"
+
+  retry:
+    max_retries: 2
+    delay_seconds: 5
+    on_failure: "mark_blocked"
+
+  monitoring:
+    poll_interval_seconds: 120
+    max_messages_per_cycle: 30
+
+  scheduling:
+    initial_fetch_limit: 50
+    recent_scan_limit: 30
+    polling_interval_seconds: 120
+    first_run_recent_hours: 24

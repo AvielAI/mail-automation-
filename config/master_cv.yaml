@@ -1,0 +1,33 @@
+master_cv:
+  experience:
+    - company: ""
+      role: ""
+      start_date: ""
+      end_date: ""
+      location: ""
+      description: ""
+      technologies: []
+      achievements: []
+
+  projects:
+    - name: ""
+      description: ""
+      technologies: []
+      url: ""
+      highlights: []
+
+  skills:
+    programming_languages: []
+    frameworks: []
+    databases: []
+    tools: []
+    cloud: []
+    other: []
+
+  certifications: []
+
+  volunteer: []
+
+  # IMPORTANT: Fill this file with your REAL experience, skills, and projects.
+  # The system will NEVER invent data. It only uses what is listed here.
+  # Leave sections empty if you have nothing to list.

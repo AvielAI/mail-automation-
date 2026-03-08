@@ -1,163 +1,166 @@
-# Insurance Mail to Excel
+# Job Application Automation System
 
-A production-ready Flask web application that connects to Gmail via OAuth2, finds insurance-related emails (Hebrew + English), extracts structured data from bodies and PDF attachments, and exports a structured Excel workbook — with **no database**.
-
-Designed for deployment on **Render Free** tier with ephemeral filesystem.
-
----
+A local Windows-based system that monitors WhatsApp Web groups for job postings and automatically applies to them.
 
 ## Features
 
-- **Gmail OAuth2** — read-only access, no password collected
-- **Hebrew + English** insurance email detection
-- **PDF extraction** — PyMuPDF + pdfplumber, OCR fallback (pytesseract)
-- **Classification** — 8 insurance types with confidence score
-- **Field extraction** — policy number, insurer, dates, premiums, vehicle #, address, agent, and more
-- **Excel export** — 4-sheet workbook (All Policies, Monthly Payments, Needs Review, Sync Log)
-- **No database** — file-based JSON persistence, ephemeral-friendly
-- **Bootstrap UI** — Dashboard, Sync, Records, Review, Export, Errors/Logs
+- **WhatsApp Monitoring**: Monitors specified WhatsApp Web groups for new job posts using Playwright
+- **Job Detection**: 2-stage pipeline (rule-based + enhanced analysis) to classify messages as actionable job posts
+- **Resume Generation**: Auto-generates tailored DOCX and PDF resumes from source-of-truth YAML files
+- **Form Filling**: Automatically fills online application forms using Playwright
+- **Email Applications**: Sends application emails with resume attached when only an email address is available
+- **Dashboard**: Local web dashboard to track all jobs, review blocked ones, and export reports
+- **Export**: Export job data to Excel (.xlsx) and Word (.docx) reports
+- **Scheduling**: Smart first-run behavior (latest 50 messages, 24h window), continuous polling every 120s
 
----
+## Mode
 
-## Quick Start (local)
+Default mode: **full_automatic** - processes jobs end-to-end automatically, pausing only on true blockers (CAPTCHA, 2FA, broken pages, missing mandatory data).
 
-```bash
-# 1. Clone and install
-git clone <repo>
-cd <repo>
-pip install -r requirements.txt
+## Prerequisites
 
-# 2. Configure
-cp .env.example .env
-# Edit .env: fill GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, FLASK_SECRET_KEY
+- Python 3.12+
+- LibreOffice (for PDF conversion) - [Download](https://www.libreoffice.org/download/)
+- Google Chrome browser
+- Gmail App Password (for sending emails)
 
-# 3. Run dev server
-flask --app wsgi:app run --debug
+## Windows Setup Instructions
 
-# 4. Open http://localhost:5000 → Connect Gmail → Sync → Export
+### 1. Clone and navigate to project
+
+```cmd
+cd Desktop\My_Project
 ```
 
-### Google OAuth2 setup
+### 2. Create virtual environment
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials
-2. Create an **OAuth 2.0 Client ID** (type: Web application)
-3. Add authorised redirect URI: `http://localhost:5000/auth/callback`
-   (for production: `https://your-app.onrender.com/auth/callback`)
-4. Copy **Client ID** and **Client Secret** into `.env`
+```cmd
+python -m venv venv
+venv\Scripts\activate
+```
 
----
+### 3. Install dependencies
 
-## Deploy to Render
+```cmd
+pip install -r requirements.txt
+```
 
-1. Fork/push this repo to GitHub
-2. In Render dashboard: **New → Web Service** → connect repo
-3. Render picks up `render.yaml` automatically
-4. Set environment variables in Render dashboard:
-   - `GOOGLE_CLIENT_ID`
-   - `GOOGLE_CLIENT_SECRET`
-   - `GOOGLE_REDIRECT_URI` = `https://your-app.onrender.com/auth/callback`
-5. Add the production redirect URI to your Google OAuth2 client
+### 4. Install Playwright browsers
 
-> **Note:** Render Free filesystem is ephemeral. Data stored in `/tmp/insurance_data` is wiped on restart. Reconnect Gmail and re-sync if data disappears.
+```cmd
+playwright install chromium
+```
 
----
+### 5. Configure environment
+
+```cmd
+copy .env.example .env
+```
+
+Edit `.env` and set your Gmail App Password:
+- Go to https://myaccount.google.com/apppasswords
+- Generate an App Password for "Mail"
+- Paste it in `.env` as `SENDER_EMAIL_PASSWORD`
+
+### 6. Edit your profile data
+
+Edit these YAML files in the `config/` folder with your real information:
+
+- `config/candidate_profile.yaml` - Your personal details, education, languages
+- `config/master_cv.yaml` - Your work experience, projects, skills, certifications
+
+**Important**: The system never invents data. It only uses what you put in these files.
+
+### 7. Start the application
+
+```cmd
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 8. Open the dashboard
+
+Open your browser and go to: http://127.0.0.1:8000
+
+### 9. Start WhatsApp monitoring
+
+1. Click "Start Monitor" on the dashboard
+2. WhatsApp Web will open in a Chrome window
+3. Scan the QR code with your phone (first time only)
+4. The system will start monitoring the configured groups
+
+## Scheduling Behavior
+
+### First Run
+- Reads only the latest 50 messages per group
+- Only auto-processes messages from the last 24 hours
+- Older messages stored as historical records (can be reprocessed manually)
+
+### Ongoing Polling
+- Polls every 120 seconds
+- Reads latest 30 messages per group per cycle
+- Only processes new unseen messages
+- Deduplication via message hash + group + timestamp
+
+### Dashboard Monitoring
+- Shows last polling time, next polling time
+- First run completed status
+- New messages found in last cycle
 
 ## Project Structure
 
 ```
-.
-├── app/
-│   ├── __init__.py          # create_app factory
-│   ├── config.py            # Config class from env vars
-│   ├── models/
-│   │   └── entities.py      # Dataclasses: InsuranceRecord, etc.
-│   ├── routes/
-│   │   ├── main.py          # Dashboard, /healthz, /records, /review, /errors
-│   │   ├── auth.py          # Gmail OAuth2 connect/callback/disconnect
-│   │   ├── sync.py          # Sync trigger + status polling
-│   │   └── export.py        # Excel download
-│   ├── services/
-│   │   ├── gmail_service.py          # Gmail API search + attachment fetch
-│   │   ├── classification_service.py # Type classification + field extraction
-│   │   ├── dedup_service.py          # Record deduplication
-│   │   ├── excel_export_service.py   # openpyxl workbook builder
-│   │   ├── extraction/
-│   │   │   ├── pdf_extractor.py      # PyMuPDF + pdfplumber + OCR dispatch
-│   │   │   ├── ocr_extractor.py      # pytesseract + pdf2image
-│   │   │   └── parsers.py            # Regex field parsers (He+En)
-│   │   └── storage/
-│   │       ├── base.py               # Storage facade
-│   │       ├── file_store.py         # Path management
-│   │       ├── atomic_io.py          # Atomic JSON/text writes
-│   │       ├── locks.py              # File-based sync lock
-│   │       └── repositories.py       # Record/Error/SyncLog repos
-│   ├── templates/           # Jinja2 + Bootstrap 5
-│   └── utils/helpers.py
-├── tests/
-│   ├── test_storage.py
-│   ├── test_classification.py
-│   ├── test_extraction.py
-│   └── test_excel.py
-├── wsgi.py
-├── render.yaml
-├── gunicorn.conf.py
-├── requirements.txt
-├── .env.example
-└── SECURITY_NOTES.md
+/app
+  /api          - FastAPI routes and endpoints
+  /core         - Configuration and database
+  /services     - All business logic services
+  /models       - Data models
+  /templates    - Jinja2 HTML templates
+  /static       - CSS and JavaScript
+  /utils        - Utility functions
+/config         - YAML configuration files (source of truth)
+/data           - SQLite database and WhatsApp session (auto-created)
+/generated      - Generated resumes, cover letters, exports (auto-created)
 ```
 
----
+## API Endpoints
 
-## Running Tests
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Dashboard |
+| `/job/{id}` | GET | Job detail page |
+| `/blocked` | GET | Blocked/review jobs |
+| `/sent` | GET | Sent/submitted jobs |
+| `/api/jobs` | GET | List jobs (JSON) |
+| `/api/jobs/{id}` | GET | Job details (JSON) |
+| `/api/jobs/{id}/retry` | POST | Retry a failed job |
+| `/api/jobs/{id}/approve` | POST | Approve a review job |
+| `/api/process-text` | POST | Process a message manually |
+| `/api/whatsapp/start` | POST | Start WhatsApp monitor |
+| `/api/whatsapp/stop` | POST | Stop WhatsApp monitor |
+| `/api/export/excel` | GET | Export to Excel |
+| `/api/export/word` | GET | Export to Word |
+| `/api/status` | GET | System status |
 
-```bash
-pip install pytest pytest-mock
-pytest tests/ -v
-```
+## Monitored WhatsApp Groups
 
----
+1. משרות טק: פיתוח תוכנה ג'וניורים 2
+2. תוכנה Lev job
+3. משרות טק: data ג'וניורים 2
+4. הנדסת תעשייה וניהול Lev job
+5. חיפוש משרות עבור ג'וניורים עם דנה פרנקל 4
+6. משרות הייטק חרדים ירושלים
 
-## Supported Insurance Types
+## Application Routing
 
-| Code | Hebrew | English |
-|------|--------|---------|
-| `car` | ביטוח רכב | Car/Vehicle |
-| `health` | ביטוח בריאות | Health/Medical |
-| `home` | ביטוח דירה | Home/Property |
-| `life` | ביטוח חיים | Life |
-| `travel` | ביטוח נסיעות | Travel |
-| `mortgage` | ביטוח משכנתא | Mortgage-related |
-| `disability` | אובדן כושר | Disability/Loss of capacity |
-| `other` / `unknown` | אחר | Other/Unknown |
+- **Has application link**: Opens and fills the form, uploads resume, submits automatically
+- **Has only email**: Sends a professional application email with resume attached
 
----
+## Blocking Conditions
 
-## Extracted Fields
-
-Policy number, insurer company, insured name, ID (masked last 4), start/end/renewal dates, monthly/annual premiums (with derivation flag), currency, amount due, payment frequency, vehicle number, property address, agent/agency name, source email metadata, extraction confidence, classification confidence, needs-review flag.
-
----
-
-## Data Flow
-
-```
-Gmail API → Search messages → Download bodies + attachments
-         → PDF/OCR text extraction
-         → Rule-based classification (8 types)
-         → Regex field extraction (He+En)
-         → InsuranceRecord dataclass
-         → JSON file persistence (ephemeral-safe)
-         → Excel workbook on demand
-```
-
----
-
-## Security
-
-See [SECURITY_NOTES.md](SECURITY_NOTES.md) for full details.
-
-- Gmail read-only scope only
-- ID numbers masked (last 4 digits)
-- No logging of raw document text or tokens
-- HttpOnly + Secure session cookies
-- All secrets via environment variables
+The system pauses only on:
+- CAPTCHA / reCAPTCHA
+- 2FA / login required
+- Broken page / failed load
+- Missing mandatory data not in YAML
+- Unknown high-risk fields (salary, ID number)
+- File upload failure
